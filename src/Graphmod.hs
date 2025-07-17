@@ -564,8 +564,9 @@ options =
 
   , Option [] ["merge-boot"] (NoArg set_seperate_boot)
     "Treat hs-boot imports like normal imports."
+
   , Option [] ["ignore-self-import"] (NoArg set_ignore_self_import)
-     "Ignore self imports"
+     "Ignore self imports."
   ]
 
 add_current      :: OptT
