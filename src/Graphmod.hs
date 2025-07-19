@@ -108,11 +108,11 @@ graph opts inputs = fmap maybePrune $ mfix $ \ ~(_,mods) ->
                               then add done es size m [] todo
                               else loop done es size todo
                f : gs -> do unless (null gs) (warn opts (ambigMsg m fs))
-                            (x,imps) <- parseFile f
+                            (x,imps) <- parseFile (multi_main opts) f
                             add done es size x imps todo
 
       loop done es size (File f : todo) =
-        do (m,is) <- parseFile f
+        do (m,is) <- parseFile (multi_main opts) f
            if ignore done m
              then loop done es size todo
              else add done es size m is todo
@@ -493,6 +493,7 @@ data Opts = Opts
   , use_cabal     :: Bool -- ^ should we try to use a cabal file, if any
   , seperate_boot :: Bool
   , self_import :: Bool
+  , multi_main    :: Bool
   }
 
 type IgnoreSet  = Trie.Trie String IgnoreSpec
@@ -516,6 +517,7 @@ default_opts = Opts
   , use_cabal       = True
   , seperate_boot   = True
   , self_import     = True
+  , multi_main      = True
   }
 
 options :: [OptDescr OptT]
@@ -567,6 +569,9 @@ options =
 
   , Option [] ["ignore-self-import"] (NoArg set_ignore_self_import)
      "Ignore self imports."
+  
+  , Option [] ["single-main"] (NoArg set_single_main)
+    "Don't try to disambiguate multiple main modules"
   ]
 
 add_current      :: OptT
@@ -594,6 +599,9 @@ set_no_mod_in_cluster o = o { mod_in_cluster = False }
 
 set_ignore_self_import :: OptT
 set_ignore_self_import o = o { self_import = False }
+
+set_single_main :: OptT
+set_single_main o = o { multi_main = False }
 
 add_inc          :: FilePath -> OptT
 add_inc d o       = o { inc_dirs = d : inc_dirs o }
